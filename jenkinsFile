@@ -1,0 +1,81 @@
+pipeline {
+    agent any
+
+    environment {
+        MAVEN_HOME = '/usr/local/maven' // Update to your Maven path
+        JAVA_HOME = '/usr/lib/jvm/java-17' // Update to your Java path
+    }
+
+    options {
+        skipDefaultCheckout()
+        timestamps()
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/your-repo/automation-project.git'
+            }
+        }
+
+        stage('Build Parent & Modules') {
+            steps {
+                sh "${MAVEN_HOME}/bin/mvn clean install -DskipTests"
+            }
+        }
+
+        stage('Run Web Tests') {
+            when {
+                expression { return params.RUN_WEB == true }
+            }
+            steps {
+                sh "${MAVEN_HOME}/bin/mvn test -pl web-module"
+            }
+        }
+
+        stage('Run Mobile Tests') {
+            when {
+                expression { return params.RUN_MOBILE == true }
+            }
+            steps {
+                sh "${MAVEN_HOME}/bin/mvn test -pl mobile-module"
+            }
+        }
+
+        stage('Run API Tests') {
+            when {
+                expression { return params.RUN_API == true }
+            }
+            steps {
+                sh "${MAVEN_HOME}/bin/mvn test -pl api-module"
+            }
+        }
+        stage('Run Tests in Parallel') {
+            parallel {
+                stage('Web Tests') {
+                    steps { sh "${MAVEN_HOME}/bin/mvn test -pl web-module" }
+                }
+                stage('Mobile Tests') {
+                    steps { sh "${MAVEN_HOME}/bin/mvn test -pl mobile-module" }
+                }
+                stage('API Tests') {
+                    steps { sh "${MAVEN_HOME}/bin/mvn test -pl api-module" }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: '**/target/surefire-reports/*.xml', allowEmptyArchive: true
+            junit '**/target/surefire-reports/*.xml'
+        }
+
+        failure {
+            mail to: 'team@example.com',
+                    subject: "Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                    body: "Check Jenkins for details: ${env.BUILD_URL}"
+        }
+    }
+}
