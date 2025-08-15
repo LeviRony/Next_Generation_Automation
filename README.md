@@ -20,11 +20,13 @@ automation-project
 ├─ common-module
 │   ├─ pom.xml
 │   ├─ jenkinsFile
+│   ├─ README.md
 │   └─ src/main/java/com/common
 │
 ├─ web-module
 │   ├─ pom.xml
 │   ├─ jenkinsFile
+│   ├─ README.md
 │   ├─ src/test/java/com/company/web
 │   ├─ tests/LoginTest.java
 │   └─ pageobjects/LoginPage.java
@@ -32,6 +34,7 @@ automation-project
 ├─ mobile-module
 │   ├─ pom.xml
 │   ├─ jenkinsFile
+│   ├─ README.md
 │   ├─ src/test/java/com/company/mobile
 │   ├─ tests/LoginTest.java
 │   └─ pageobjects/LoginPage.java
